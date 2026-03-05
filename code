@@ -1,0 +1,531 @@
+// Code.gs - Backend Google Apps Script
+
+// กำหนด Spreadsheet ID (เปลี่ยนเป็น ID ของคุณ)
+const SPREADSHEET_ID = '1s4iAJZYzL9MzGpjPhmwOE1UXAR7CbIettqg5sEmNGq8';
+
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('ระบบประเมินเพื่อนในกลุ่ม[วันศุกร์]')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+// ตรวจสอบการ login ด้วยอีเมล
+function loginWithEmail(email) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('name');
+  const data = sheet.getDataRange().getValues();
+  
+  // หา header row
+  const headers = data[0];
+  const loginIdCol = headers.indexOf('login_id');
+  const nameCol = headers.indexOf('name');
+  const gfinalCol = headers.indexOf('gfinal');
+  
+  if (loginIdCol === -1 || nameCol === -1 || gfinalCol === -1) {
+    return {
+      success: false,
+      message: 'ไม่พบ column ที่จำเป็นใน sheet (login_id, name, gfinal)'
+    };
+  }
+  
+  // หา user
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][loginIdCol] && data[i][loginIdCol].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      return {
+        success: true,
+        email: email.toLowerCase().trim(),
+        studentId: data[i][0], // column แรกเป็นรหัสนักศึกษา
+        name: data[i][nameCol],
+        group: data[i][gfinalCol],
+        rowIndex: i + 1
+      };
+    }
+  }
+  
+  return {
+    success: false,
+    message: 'ไม่พบอีเมล "' + email + '" ในระบบ กรุณาตรวจสอบอีเมลและลองใหม่'
+  };
+}
+
+// ดึงรายชื่อเพื่อนในกลุ่มเดียวกัน
+function getGroupMembers(userGroup, userEmail) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const nameSheet = ss.getSheetByName('name');
+  const resultSheet = ss.getSheetByName('peerresult');
+  
+  const nameData = nameSheet.getDataRange().getValues();
+  const headers = nameData[0];
+  
+  const loginIdCol = headers.indexOf('login_id');
+  const nameCol = headers.indexOf('name');
+  const gfinalCol = headers.indexOf('gfinal');
+  
+  // ดึงข้อมูลผลการประเมิน
+  let resultData = [];
+  if (resultSheet && resultSheet.getLastRow() > 0) {
+    resultData = resultSheet.getDataRange().getValues();
+  }
+  
+  const members = [];
+  
+  for (let i = 1; i < nameData.length; i++) {
+    const row = nameData[i];
+    if (row[gfinalCol] === userGroup && 
+        row[loginIdCol] && 
+        row[loginIdCol].toString().toLowerCase().trim() !== userEmail.toLowerCase().trim()) {
+      // ตรวจสอบว่าประเมินแล้วหรือยัง
+      const evaluated = checkIfEvaluated(userEmail, row[loginIdCol].toString().trim(), resultData);
+      
+      members.push({
+        studentId: row[0],
+        name: row[nameCol],
+        email: row[loginIdCol].toString().trim(),
+        evaluated: evaluated
+      });
+    }
+  }
+  
+  return members;
+}
+
+// ตรวจสอบว่าประเมินแล้วหรือยัง
+function checkIfEvaluated(evaluatorEmail, evaluatedEmail, resultData) {
+  if (!resultData || resultData.length <= 1) return false;
+  
+  // column A เป็น evaluator_email และ column B เป็น evaluated_email
+  for (let i = 1; i < resultData.length; i++) {
+    if (resultData[i][0] && resultData[i][1] && 
+        resultData[i][0].toString().toLowerCase().trim() === evaluatorEmail.toLowerCase().trim() &&
+        resultData[i][1].toString().toLowerCase().trim() === evaluatedEmail.toLowerCase().trim()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// บันทึกผลการประเมิน
+function saveEvaluation(evaluatorInfo, evaluatedEmail, ratings, feedback) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const nameSheet = ss.getSheetByName('name');
+  let resultSheet = ss.getSheetByName('peerresult');
+  
+  // สร้าง sheet ถ้ายังไม่มี
+  if (!resultSheet) {
+    resultSheet = ss.insertSheet('peerresult');
+  }
+  
+  // หาข้อมูลของผู้ถูกประเมิน
+  const nameData = nameSheet.getDataRange().getValues();
+  const headers = nameData[0];
+  const loginIdCol = headers.indexOf('login_id');
+  const nameCol = headers.indexOf('name');
+  const gfinalCol = headers.indexOf('gfinal');
+  
+  let evaluatedInfo = null;
+  for (let i = 1; i < nameData.length; i++) {
+    if (nameData[i][loginIdCol] && 
+        nameData[i][loginIdCol].toString().toLowerCase().trim() === evaluatedEmail.toLowerCase().trim()) {
+      evaluatedInfo = {
+        studentId: nameData[i][0],
+        name: nameData[i][nameCol],
+        group: nameData[i][gfinalCol]
+      };
+      break;
+    }
+  }
+  
+  if (!evaluatedInfo) {
+    return { success: false, message: 'ไม่พบข้อมูลผู้ถูกประเมิน' };
+  }
+  
+  // ตรวจสอบว่าประเมินซ้ำหรือไม่
+  if (resultSheet.getLastRow() > 0) {
+    const resultData = resultSheet.getDataRange().getValues();
+    for (let i = 1; i < resultData.length; i++) {
+      if (resultData[i][0] && resultData[i][1] &&
+          resultData[i][0].toString().toLowerCase().trim() === evaluatorInfo.email.toLowerCase().trim() &&
+          resultData[i][1].toString().toLowerCase().trim() === evaluatedEmail.toLowerCase().trim()) {
+        return { success: false, message: 'คุณได้ประเมินเพื่อนคนนี้ไปแล้ว' };
+      }
+    }
+  }
+  
+  // เตรียมข้อมูลที่จะบันทึก
+  const row = [
+    evaluatorInfo.email,           // A: evaluator_email
+    evaluatedEmail,                // B: evaluated_email
+    evaluatorInfo.studentId,       // C: evaluator_id
+    evaluatorInfo.name,            // D: evaluator_name
+    evaluatedInfo.studentId,       // E: evaluated_id
+    evaluatedInfo.name,            // F: evaluated_name
+    ratings.q1 || '',              // G: competency 1
+    ratings.q2 || '',              // H: competency 2
+    ratings.q3 || '',              // I: competency 3
+    ratings.q4 || '',              // J: competency 4
+    ratings.q5 || '',              // K: competency 5
+    feedback.strengths || '',      // L: จุดเด่น
+    feedback.improvements || '',   // M: ข้อควรปรับปรุง
+    new Date()                     // N: timestamp
+  ];
+  
+  // ถ้ายังไม่มี header ให้เพิ่ม
+  if (resultSheet.getLastRow() === 0) {
+    resultSheet.appendRow([
+      'evaluator_email',
+      'evaluated_email', 
+      'evaluator_id',
+      'evaluator_name',
+      'evaluated_id',
+      'evaluated_name',
+      'comp1_planning',
+      'comp2_accountability',
+      'comp3_teamwork',
+      'comp4_quality',
+      'comp5_time_management',
+      'strengths',
+      'improvements',
+      'timestamp'
+    ]);
+  }
+  
+  resultSheet.appendRow(row);
+  
+  return { success: true, message: 'บันทึกผลการประเมินเรียบร้อยแล้ว' };
+}
+
+// ดึงข้อมูลผู้ที่จะถูกประเมิน
+function getEvaluatedInfo(evaluatedEmail) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const nameSheet = ss.getSheetByName('name');
+  const nameData = nameSheet.getDataRange().getValues();
+  const headers = nameData[0];
+  const loginIdCol = headers.indexOf('login_id');
+  const nameCol = headers.indexOf('name');
+  
+  for (let i = 1; i < nameData.length; i++) {
+    if (nameData[i][loginIdCol] && 
+        nameData[i][loginIdCol].toString().toLowerCase().trim() === evaluatedEmail.toLowerCase().trim()) {
+      return {
+        studentId: nameData[i][0],
+        name: nameData[i][nameCol],
+        email: nameData[i][loginIdCol].toString().trim()
+      };
+    }
+  }
+  
+  return null;
+}
+
+// ดึงผลประเมินของตัวเอง
+function getMyFeedback(userEmail, userGroup) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const resultSheet = ss.getSheetByName('peerresult');
+  const nameSheet = ss.getSheetByName('name');
+  
+  if (!resultSheet || resultSheet.getLastRow() <= 1) {
+    return {
+      success: false,
+      message: 'ยังไม่มีข้อมูลการประเมิน'
+    };
+  }
+  
+  // นับจำนวนเพื่อนในกลุ่ม
+  const nameData = nameSheet.getDataRange().getValues();
+  const headers = nameData[0];
+  const loginIdCol = headers.indexOf('login_id');
+  const gfinalCol = headers.indexOf('gfinal');
+  
+  let totalPeers = 0;
+  for (let i = 1; i < nameData.length; i++) {
+    if (nameData[i][gfinalCol] === userGroup && 
+        nameData[i][loginIdCol] && 
+        nameData[i][loginIdCol].toString().toLowerCase().trim() !== userEmail.toLowerCase().trim()) {
+      totalPeers++;
+    }
+  }
+  
+  // ดึงผลประเมินที่เพื่อนให้ (evaluated_email = userEmail)
+  const resultData = resultSheet.getDataRange().getValues();
+  const evaluations = [];
+  
+  for (let i = 1; i < resultData.length; i++) {
+    if (resultData[i][1] && 
+        resultData[i][1].toString().toLowerCase().trim() === userEmail.toLowerCase().trim()) {
+      evaluations.push({
+        comp1: parseFloat(resultData[i][6]) || 0,
+        comp2: parseFloat(resultData[i][7]) || 0,
+        comp3: parseFloat(resultData[i][8]) || 0,
+        comp4: parseFloat(resultData[i][9]) || 0,
+        comp5: parseFloat(resultData[i][10]) || 0,
+        strengths: resultData[i][11] || '',
+        improvements: resultData[i][12] || ''
+      });
+    }
+  }
+  
+  if (evaluations.length === 0) {
+    return {
+      success: false,
+      message: 'ยังไม่มีเพื่อนคนใดประเมินคุณ'
+    };
+  }
+  
+  // คำนวณค่าเฉลี่ย
+  const averages = {
+    comp1: 0, comp2: 0, comp3: 0, comp4: 0, comp5: 0
+  };
+  
+  evaluations.forEach(function(eval) {
+    averages.comp1 += eval.comp1;
+    averages.comp2 += eval.comp2;
+    averages.comp3 += eval.comp3;
+    averages.comp4 += eval.comp4;
+    averages.comp5 += eval.comp5;
+  });
+  
+  const count = evaluations.length;
+  averages.comp1 = (averages.comp1 / count).toFixed(2);
+  averages.comp2 = (averages.comp2 / count).toFixed(2);
+  averages.comp3 = (averages.comp3 / count).toFixed(2);
+  averages.comp4 = (averages.comp4 / count).toFixed(2);
+  averages.comp5 = (averages.comp5 / count).toFixed(2);
+  
+  // รวบรวมฟีดแบค (กรองคำไม่เหมาะสม)
+  const allStrengths = [];
+  const allImprovements = [];
+  
+  evaluations.forEach(function(eval) {
+    if (eval.strengths) {
+      const filtered = filterInappropriate(eval.strengths);
+      if (filtered) allStrengths.push(filtered);
+    }
+    if (eval.improvements) {
+      const filtered = filterInappropriate(eval.improvements);
+      if (filtered) allImprovements.push(filtered);
+    }
+  });
+  
+  // สร้างสรุปคำแนะนำ
+  const summary = generateSummary(averages, allStrengths, allImprovements);
+  
+  // บันทึกลง sheet 'name'
+  updateFeedbackToNameSheet(userEmail, totalPeers, count, averages, summary);
+  
+  return {
+    success: true,
+    totalPeers: totalPeers,
+    evaluatedCount: count,
+    averages: averages,
+    strengths: allStrengths,
+    improvements: allImprovements,
+    summary: summary
+  };
+}
+
+// กรองคำไม่เหมาะสม
+function filterInappropriate(text) {
+  const inappropriateWords = [
+    'โง่', 'งี่เง่า', 'ไอ้', 'เหี้ย', 'ควาย', 'สัตว์', 'ห่า', 'บ้า', 'เลว', 'แย่',
+    'stupid', 'idiot', 'fool', 'dumb', 'hate', 'worst', 'terrible', 'useless'
+  ];
+  
+  let filtered = text;
+  inappropriateWords.forEach(function(word) {
+    const regex = new RegExp(word, 'gi');
+    if (regex.test(filtered)) {
+      return null; // ถ้าพบคำไม่เหมาะสม ไม่แสดงข้อความนั้น
+    }
+  });
+  
+  return filtered;
+}
+
+// สร้างสรุปคำแนะนำ
+function generateSummary(averages, strengths, improvements) {
+  const competencies = [
+    { 
+      id: 'comp1',
+      name: 'การมีส่วนร่วมในการวางแผนงาน', 
+      score: parseFloat(averages.comp1),
+      suggestion: 'เข้าร่วมประชุมวางแผนทุกครั้ง เตรียมตัวล่วงหน้า และกล้าแสดงความคิดเห็นเชิงสร้างสรรค์'
+    },
+    { 
+      id: 'comp2',
+      name: 'ความรับผิดชอบต่องานที่ได้รับมอบหมาย', 
+      score: parseFloat(averages.comp2),
+      suggestion: 'สร้างตารางติดตามงาน ตั้งเตือน และรายงานความคืบหน้าให้ทีมรับรู้เป็นระยะ'
+    },
+    { 
+      id: 'comp3',
+      name: 'การทำงานร่วมกับผู้อื่น', 
+      score: parseFloat(averages.comp3),
+      suggestion: 'สื่อสารกับทีมบ่อยขึ้น เปิดใจรับฟังความคิดเห็น และเสนอตัวช่วยเหลือเพื่อนเมื่อเห็นว่าเขาต้องการ'
+    },
+    { 
+      id: 'comp4',
+      name: 'คุณภาพของงานที่ส่งมอบ', 
+      score: parseFloat(averages.comp4),
+      suggestion: 'ตรวจสอบงานอย่างละเอียดก่อนส่ง ขอคำแนะนำจากเพื่อนหรืออาจารย์ และใช้เวลาปรับปรุงให้ดีที่สุด'
+    },
+    { 
+      id: 'comp5',
+      name: 'การตรงต่อเวลา/การจัดการเวลา', 
+      score: parseFloat(averages.comp5),
+      suggestion: 'วางแผนการทำงานล่วงหน้า ตั้งเตือนสำหรับงานสำคัญ และเริ่มทำงานก่อนเวลาเผื่อไว้'
+    }
+  ];
+  
+  // เพิ่ม overall score
+  const overallScore = (parseFloat(averages.comp1) + parseFloat(averages.comp2) + 
+                        parseFloat(averages.comp3) + parseFloat(averages.comp4) + 
+                        parseFloat(averages.comp5)) / 5;
+  
+  competencies.push({
+    id: 'overall',
+    name: 'ภาพรวมการทำงานเป็นทีม',
+    score: overallScore,
+    suggestion: 'มุ่งเน้นพัฒนาด้านที่คะแนนต่ำกว่า 3.5 ก่อน แล้วค่อยยกระดับด้านอื่นๆ ต่อ รักษามาตรฐานด้านที่ดีอยู่แล้วให้คงที่'
+  });
+  
+  // สร้างข้อมูลสำหรับตาราง
+  const tableData = competencies.map(function(comp) {
+    return {
+      name: comp.name,
+      score: comp.score.toFixed(2),
+      suggestion: comp.suggestion
+    };
+  });
+  
+  // เพิ่มข้อมูลจากฟีดแบคของเพื่อน
+  let feedbackSummary = '';
+  if (strengths.length > 0) {
+    feedbackSummary += 'เพื่อนมองว่าคุณ: ' + strengths[0];
+  }
+  if (improvements.length > 0) {
+    if (feedbackSummary) feedbackSummary += ' | ';
+    feedbackSummary += 'ข้อเสนอแนะ: ' + improvements[0];
+  }
+  
+  return {
+    tableData: tableData,
+    feedbackSummary: feedbackSummary
+  };
+}
+
+// บันทึกข้อมูลสรุปลง sheet 'name'
+function updateFeedbackToNameSheet(userEmail, totalPeers, evaluatedCount, averages, summary) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const nameSheet = ss.getSheetByName('name');
+  const data = nameSheet.getDataRange().getValues();
+  const headers = data[0];
+  
+  // แปลง summary object เป็น text
+  let summaryText = 'คำแนะนำเพื่อการพัฒนา:\n\n';
+  if (summary.tableData) {
+    summary.tableData.forEach(function(row) {
+      summaryText += `${row.name}: ${row.score}/5\n`;
+      summaryText += `คำแนะนำ: ${row.suggestion}\n\n`;
+    });
+  }
+  if (summary.feedbackSummary) {
+    summaryText += '\nความคิดเห็นจากเพื่อน:\n' + summary.feedbackSummary;
+  }
+  
+  // หา/สร้าง columns สำหรับข้อมูลสรุป
+  let totalPeersCol = headers.indexOf('total_peers');
+  let evaluatedCountCol = headers.indexOf('evaluated_by_count');
+  let avgComp1Col = headers.indexOf('avg_comp1');
+  let avgComp2Col = headers.indexOf('avg_comp2');
+  let avgComp3Col = headers.indexOf('avg_comp3');
+  let avgComp4Col = headers.indexOf('avg_comp4');
+  let avgComp5Col = headers.indexOf('avg_comp5');
+  let summaryCol = headers.indexOf('development_summary');
+  
+  // ถ้ายังไม่มี columns ให้สร้าง
+  if (totalPeersCol === -1) {
+    const lastCol = headers.length;
+    nameSheet.getRange(1, lastCol + 1).setValue('total_peers');
+    nameSheet.getRange(1, lastCol + 2).setValue('evaluated_by_count');
+    nameSheet.getRange(1, lastCol + 3).setValue('avg_comp1');
+    nameSheet.getRange(1, lastCol + 4).setValue('avg_comp2');
+    nameSheet.getRange(1, lastCol + 5).setValue('avg_comp3');
+    nameSheet.getRange(1, lastCol + 6).setValue('avg_comp4');
+    nameSheet.getRange(1, lastCol + 7).setValue('avg_comp5');
+    nameSheet.getRange(1, lastCol + 8).setValue('development_summary');
+    
+    totalPeersCol = lastCol;
+    evaluatedCountCol = lastCol + 1;
+    avgComp1Col = lastCol + 2;
+    avgComp2Col = lastCol + 3;
+    avgComp3Col = lastCol + 4;
+    avgComp4Col = lastCol + 5;
+    avgComp5Col = lastCol + 6;
+    summaryCol = lastCol + 7;
+  }
+  
+  // หา row ของ user
+  const loginIdCol = headers.indexOf('login_id');
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][loginIdCol] && 
+        data[i][loginIdCol].toString().toLowerCase().trim() === userEmail.toLowerCase().trim()) {
+      const row = i + 1;
+      nameSheet.getRange(row, totalPeersCol + 1).setValue(totalPeers);
+      nameSheet.getRange(row, evaluatedCountCol + 1).setValue(evaluatedCount);
+      nameSheet.getRange(row, avgComp1Col + 1).setValue(averages.comp1);
+      nameSheet.getRange(row, avgComp2Col + 1).setValue(averages.comp2);
+      nameSheet.getRange(row, avgComp3Col + 1).setValue(averages.comp3);
+      nameSheet.getRange(row, avgComp4Col + 1).setValue(averages.comp4);
+      nameSheet.getRange(row, avgComp5Col + 1).setValue(averages.comp5);
+      nameSheet.getRange(row, summaryCol + 1).setValue(summaryText);
+      break;
+    }
+  }
+}
+
+// บันทึกการประเมินระบบ
+function saveSystemEvaluation(userInfo, ratings, feedback) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let systemSheet = ss.getSheetByName('systemeval');
+  
+  // สร้าง sheet ถ้ายังไม่มี
+  if (!systemSheet) {
+    systemSheet = ss.insertSheet('systemeval');
+    systemSheet.appendRow([
+      'timestamp',
+      'email',
+      'student_id',
+      'name',
+      'ease_of_use',
+      'usefulness',
+      'design',
+      'overall_satisfaction',
+      'liked_most',
+      'suggestions',
+      'would_recommend'
+    ]);
+  }
+  
+  const row = [
+    new Date(),
+    userInfo.email,
+    userInfo.studentId,
+    userInfo.name,
+    ratings.easeOfUse || '',
+    ratings.usefulness || '',
+    ratings.design || '',
+    ratings.overall || '',
+    feedback.likedMost || '',
+    feedback.suggestions || '',
+    feedback.recommend || ''
+  ];
+  
+  systemSheet.appendRow(row);
+  
+  return { success: true, message: 'บันทึกการประเมินระบบเรียบร้อยแล้ว' };
+}
