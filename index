@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบประเมินเพื่อนในกลุ่ม[วันศุกร์]</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      padding: 30px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+    }
+    
+    .header-banner {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Banner สำหรับหน้า Login - เด่นพิเศษ */
+    .login-banner {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    
+    .login-banner:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    /* Login Styles */
+    .login-container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    .login-box {
+      max-width: 450px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    
+    .login-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+    
+    .login-box h2 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .login-box p {
+      color: #6c757d;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .input-group label {
+      display: block;
+      color: #333;
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .user-info {
+      background: #f8f9ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .user-info h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    
+    .info-row {
+      display: flex;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .info-label {
+      font-weight: bold;
+      color: #667eea;
+      width: 120px;
+    }
+    
+    .info-value {
+      color: #333;
+    }
+    
+    .warning-box {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .warning-box p {
+      color: #856404;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    
+    .warning-box strong {
+      color: #d9534f;
+    }
+    
+    .btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      width: 100%;
+    }
+    
+    .btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .btn-success {
+      background: #28a745;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+    }
+    
+    .btn-small {
+      width: auto;
+      padding: 8px 20px;
+      font-size: 14px;
+    }
+    
+    .member-list {
+      margin-top: 20px;
+    }
+    
+    .member-item {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+    
+    .member-item:hover {
+      border-color: #667eea;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+    }
+    
+    .member-info {
+      flex: 1;
+    }
+    
+    .member-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .member-id {
+      color: #6c757d;
+      font-size: 14px;
+    }
+    
+    .status-badge {
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+      font-size: 18px;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px solid #f5c6cb;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Evaluation Form Styles */
+    .eval-form {
+      margin-top: 20px;
+    }
+    
+    .eval-header {
+      background: #667eea;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .eval-header h2 {
+      margin-bottom: 10px;
+    }
+    
+    .form-section {
+      background: #f8f9ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .form-section h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    
+    .question-group {
+      margin-bottom: 25px;
+    }
+    
+    .question-label {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      display: block;
+      line-height: 1.5;
+    }
+    
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-left: 20px;
+    }
+    
+    .radio-option {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    
+    .radio-option:hover {
+      background: #e9ecef;
+    }
+    
+    .radio-option input[type="radio"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .radio-option label {
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.3s;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 20px 0;
+      border: 2px solid #c3e6cb;
+    }
+    
+    .success-message h3 {
+      margin-bottom: 10px;
+    }
+
+    /* Feedback Display Styles */
+    .feedback-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      color: #6c757d;
+      font-size: 14px;
+    }
+    
+    .score-grid {
+      display: grid;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .score-item {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .score-name {
+      flex: 1;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .score-bar-container {
+      width: 200px;
+      height: 30px;
+      background: #e9ecef;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 0 15px;
+      position: relative;
+    }
+    
+    .score-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 15px;
+      transition: width 0.5s ease;
+    }
+    
+    .score-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #667eea;
+      min-width: 50px;
+      text-align: right;
+    }
+    
+    .feedback-box {
+      background: #f8f9ff;
+      border-left: 4px solid #667eea;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    
+    .feedback-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .feedback-item:last-child {
+      border-bottom: none;
+    }
+    
+    .summary-box {
+      background: linear-gradient(135deg, #667eea15, #764ba215);
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      white-space: pre-line;
+      line-height: 1.8;
+    }
+    
+    .summary-box strong {
+      color: #667eea;
+    }
+    
+    /* Development Table Styles */
+    .dev-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .dev-table th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 15px 10px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    .dev-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #e9ecef;
+      vertical-align: top;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .dev-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .dev-table tr:nth-child(even) {
+      background: #f8f9ff;
+    }
+    
+    .dev-table tr:hover {
+      background: #f0f2ff;
+    }
+    
+    .aspect-name {
+      font-weight: bold;
+      color: #333;
+      min-width: 180px;
+    }
+    
+    .score-cell {
+      font-weight: bold;
+      min-width: 80px;
+      text-align: center;
+      padding: 12px 15px !important;
+      font-size: 16px;
+    }
+    
+    .score-excellent {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .score-good {
+      background: #cfe2ff;
+      color: #084298;
+    }
+    
+    .score-fair {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .score-poor {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .suggestion-cell {
+      color: #333;
+      min-width: 250px;
+      line-height: 1.7;
+    }
+    
+    .overall-row {
+      background: #e9ecff !important;
+      font-weight: bold;
+    }
+    
+    .overall-row td {
+      border-top: 3px solid #667eea;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .header h1 {
+        font-size: 22px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+      
+      .score-bar-container {
+        width: 120px;
+      }
+      
+      .feedback-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      /* Make table scrollable on mobile */
+      .dev-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .dev-table {
+        font-size: 12px;
+      }
+      
+      .dev-table th,
+      .dev-table td {
+        padding: 8px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login View -->
+    <div id="loginView">
+      <!-- Banner เด่นๆ ด้านบน -->
+      <div class="login-container">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="login-banner">
+      </div>
+      
+      <div class="login-box">
+        <div class="login-icon">👤</div>
+        <h2>เข้าสู่ระบบประเมินเพื่อนในทีม [วันศุกร์]</h2>
+        <p>กรุณากรอก CMU email ของคุณ </p>
+        
+        <div class="input-group">
+          <label for="emailInput">อีเมล</label>
+          <input 
+            type="email" 
+            id="emailInput" 
+            placeholder="example@email.com"
+            autocomplete="email"
+          >
+        </div>
+        
+        <div id="loginError" class="error hidden"></div>
+        
+        <button class="btn" id="loginBtn" onclick="handleLogin()">
+          เข้าสู่ระบบ
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading hidden">
+      <div>กำลังโหลดข้อมูล...</div>
+    </div>
+    
+    <!-- Error State -->
+    <div id="errorState" class="error hidden"></div>
+    
+    <!-- Main View -->
+    <div id="mainView" class="hidden">
+      <div class="header">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+        <h1>🎯 ระบบประเมินเพื่อนในกลุ่ม 360 องศา</h1>
+        <button class="btn btn-secondary btn-small" onclick="logout()" style="margin-top: 10px;">
+          ออกจากระบบ
+        </button>
+      </div>
+      
+      <div class="user-info">
+        <h2>ข้อมูลของคุณ</h2>
+        <div class="info-row">
+          <span class="info-label">รหัสนักศึกษา:</span>
+          <span class="info-value" id="userStudentId"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">ชื่อ-นามสกุล:</span>
+          <span class="info-value" id="userName"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">กลุ่ม:</span>
+          <span class="info-value" id="userGroup"></span>
+        </div>
+      </div>
+      
+      <div class="warning-box">
+        <p><strong>⚠️ คำเตือนสำคัญ:</strong></p>
+        <p>• เมื่อประเมินเพื่อนแล้ว จะไม่สามารถแก้ไขได้อีก</p>
+        <p>• คุณไม่สามารถกลับมาดูผลที่คุณประเมินเพื่อนไปแล้ว</p>
+        <p>• กรุณากรอกข้อมูลด้วยความตั้งใจและความรับผิดชอบ</p>
+        <p>• ดูสรุปผลที่เพื่อนประเมินฉันได้จากเมนูด้านล่าง</p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <button class="btn" id="showMembersBtn" onclick="showGroupMembers()">
+          📋 เข้าประเมินเพื่อนในกลุ่ม
+        </button>
+      </div>
+      
+      <div style="text-align: center; margin: 20px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="viewMyFeedback()">
+          📊 ดูสรุปผลที่เพื่อนประเมินฉัน
+        </button>
+        <button class="btn btn-secondary" onclick="showSystemEval()">
+          ⭐ ประเมินระบบ
+        </button>
+      </div>
+    </div>
+    
+    <!-- Group Members View -->
+    <div id="membersView" class="hidden">
+      <div class="header">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+        <h1>รายชื่อเพื่อนในกลุ่ม</h1>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-small" onclick="backToMain()">
+            ← กลับหน้าหลัก
+          </button>
+          <button class="btn btn-small" onclick="refreshMembersList()" id="refreshBtn">
+            🔄 รีเฟรช
+          </button>
+        </div>
+      </div>
+      
+      <div id="membersList" class="member-list"></div>
+    </div>
+    
+    <!-- Evaluation Form View -->
+    <div id="evaluationView" class="hidden">
+      <div class="eval-header">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner" style="margin-bottom: 15px; border-radius: 8px;">
+        <h2>แบบประเมินเพื่อนร่วมกลุ่ม</h2>
+        <p>กำลังประเมิน: <span id="evaluatedName"></span> (<span id="evaluatedId"></span>)</p>
+      </div>
+      
+      <form id="evalForm" class="eval-form">
+        <div class="form-section">
+          <h3>ส่วนที่ 1: ประเมินความสามารถ (Competencies)</h3>
+          <p style="margin-bottom: 20px; color: #6c757d;">กรุณาเลือกระดับคะแนนสำหรับแต่ละด้าน</p>
+          
+          <!-- Question 1 -->
+          <div class="question-group">
+            <label class="question-label">1. การมีส่วนร่วมในการวางแผนงาน (Contribution to planning)</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="q1" value="1" id="q1_1" required>
+                <label for="q1_1">1: ต้องปรับปรุงอย่างมาก</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q1" value="2" id="q1_2">
+                <label for="q1_2">2: ควรปรับปรุง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q1" value="3" id="q1_3">
+                <label for="q1_3">3: เป็นที่ยอมรับ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q1" value="4" id="q1_4">
+                <label for="q1_4">4: ดี</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q1" value="5" id="q1_5">
+                <label for="q1_5">5: ดีเยี่ยม (เป็นแบบอย่าง)</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Question 2 -->
+          <div class="question-group">
+            <label class="question-label">2. ความรับผิดชอบต่องานที่ได้รับมอบหมาย (Accountability)</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="q2" value="1" id="q2_1" required>
+                <label for="q2_1">1: ต้องปรับปรุงอย่างมาก</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q2" value="2" id="q2_2">
+                <label for="q2_2">2: ควรปรับปรุง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q2" value="3" id="q2_3">
+                <label for="q2_3">3: เป็นที่ยอมรับ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q2" value="4" id="q2_4">
+                <label for="q2_4">4: ดี</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q2" value="5" id="q2_5">
+                <label for="q2_5">5: ดีเยี่ยม (เป็นแบบอย่าง)</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Question 3 -->
+          <div class="question-group">
+            <label class="question-label">3. การทำงานร่วมกับผู้อื่น (Collaboration/Teamwork)</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="q3" value="1" id="q3_1" required>
+                <label for="q3_1">1: ต้องปรับปรุงอย่างมาก</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q3" value="2" id="q3_2">
+                <label for="q3_2">2: ควรปรับปรุง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q3" value="3" id="q3_3">
+                <label for="q3_3">3: เป็นที่ยอมรับ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q3" value="4" id="q3_4">
+                <label for="q3_4">4: ดี</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q3" value="5" id="q3_5">
+                <label for="q3_5">5: ดีเยี่ยม (เป็นแบบอย่าง)</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Question 4 -->
+          <div class="question-group">
+            <label class="question-label">4. คุณภาพของงานที่ส่งมอบ (Quality of work)</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="q4" value="1" id="q4_1" required>
+                <label for="q4_1">1: ต้องปรับปรุงอย่างมาก</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q4" value="2" id="q4_2">
+                <label for="q4_2">2: ควรปรับปรุง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q4" value="3" id="q4_3">
+                <label for="q4_3">3: เป็นที่ยอมรับ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q4" value="4" id="q4_4">
+                <label for="q4_4">4: ดี</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q4" value="5" id="q4_5">
+                <label for="q4_5">5: ดีเยี่ยม (เป็นแบบอย่าง)</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Question 5 -->
+          <div class="question-group">
+            <label class="question-label">5. การตรงต่อเวลา/การจัดการเวลา (Time Management)</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="q5" value="1" id="q5_1" required>
+                <label for="q5_1">1: ต้องปรับปรุงอย่างมาก</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q5" value="2" id="q5_2">
+                <label for="q5_2">2: ควรปรับปรุง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q5" value="3" id="q5_3">
+                <label for="q5_3">3: เป็นที่ยอมรับ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q5" value="4" id="q5_4">
+                <label for="q5_4">4: ดี</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="q5" value="5" id="q5_5">
+                <label for="q5_5">5: ดีเยี่ยม (เป็นแบบอย่าง)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>ส่วนที่ 2: ข้อเสนอแนะ (Feedback)</h3>
+          
+          <div class="question-group">
+            <label class="question-label">1. จุดเด่นของเพื่อนร่วมทีมคนนี้คืออะไร? (1-2 ข้อ)</label>
+            <textarea name="strengths" id="strengths" placeholder="กรุณาระบุจุดเด่นของเพื่อนคนนี้..." required></textarea>
+          </div>
+          
+          <div class="question-group">
+            <label class="question-label">2. เพื่อนร่วมทีมคนนี้สามารถพัฒนาหรือปรับปรุงด้านใดได้บ้างในการทำงานครั้งต่อไป? (1-2 ข้อ)</label>
+            <textarea name="improvements" id="improvements" placeholder="กรุณาระบุข้อเสนอแนะเพื่อการพัฒนา..." required></textarea>
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" onclick="cancelEvaluation()">
+            ยกเลิก
+          </button>
+          <button type="submit" class="btn btn-success" id="submitBtn">
+            ✓ ส่งแบบประเมิน
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Success View -->
+    <div id="successView" class="hidden">
+      <div class="header" style="border: none;">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+      </div>
+      <div class="success-message">
+        <h3>✓ บันทึกการประเมินเรียบร้อยแล้ว</h3>
+        <p>ขอบคุณสำหรับการประเมินเพื่อนร่วมกลุ่ม</p>
+      </div>
+      
+      <div id="remainingMembers" class="hidden">
+        <h3 style="color: #667eea; margin-bottom: 15px;">เพื่อนที่ยังไม่ได้ประเมิน:</h3>
+        <div id="remainingList"></div>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn" onclick="backToMembers()">
+          กลับไปรายชื่อเพื่อน
+        </button>
+      </div>
+    </div>
+    
+    <!-- My Feedback View -->
+    <div id="feedbackView" class="hidden">
+      <div class="header">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+        <h1>📊 สรุปผลการประเมินจากเพื่อน</h1>
+        <button class="btn btn-secondary btn-small" onclick="backToMainFromFeedback()" style="margin-top: 10px;">
+          ← กลับหน้าหลัก
+        </button>
+      </div>
+      
+      <div id="feedbackContent"></div>
+    </div>
+    
+    <!-- System Evaluation View -->
+    <div id="systemEvalView" class="hidden">
+      <div class="header">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+        <h1>⭐ ประเมินระบบการประเมินเพื่อน</h1>
+        <button class="btn btn-secondary btn-small" onclick="backToMainFromSystemEval()" style="margin-top: 10px;">
+          ← กลับหน้าหลัก
+        </button>
+      </div>
+      
+      <form id="systemEvalForm" class="eval-form">
+        <div class="form-section">
+          <h3>ประเมินประสบการณ์การใช้งานระบบ</h3>
+          <p style="margin-bottom: 20px; color: #6c757d;">ความคิดเห็นของคุณจะช่วยให้เราปรับปรุงระบบให้ดียิ่งขึ้น</p>
+          
+          <!-- Ease of Use -->
+          <div class="question-group">
+            <label class="question-label">1. ระบบใช้งานง่าย เข้าใจได้ไม่ยาก</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="easeOfUse" value="1" id="ease_1" required>
+                <label for="ease_1">1: ไม่เห็นด้วยอย่างยิ่ง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="easeOfUse" value="2" id="ease_2">
+                <label for="ease_2">2: ไม่เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="easeOfUse" value="3" id="ease_3">
+                <label for="ease_3">3: เฉยๆ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="easeOfUse" value="4" id="ease_4">
+                <label for="ease_4">4: เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="easeOfUse" value="5" id="ease_5">
+                <label for="ease_5">5: เห็นด้วยอย่างยิ่ง</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Usefulness -->
+          <div class="question-group">
+            <label class="question-label">2. ระบบนี้มีประโยชน์ในการประเมินและพัฒนาตนเอง</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="usefulness" value="1" id="useful_1" required>
+                <label for="useful_1">1: ไม่เห็นด้วยอย่างยิ่ง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="usefulness" value="2" id="useful_2">
+                <label for="useful_2">2: ไม่เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="usefulness" value="3" id="useful_3">
+                <label for="useful_3">3: เฉยๆ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="usefulness" value="4" id="useful_4">
+                <label for="useful_4">4: เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="usefulness" value="5" id="useful_5">
+                <label for="useful_5">5: เห็นด้วยอย่างยิ่ง</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Design -->
+          <div class="question-group">
+            <label class="question-label">3. การออกแบบและรูปแบบของระบบมีความเหมาะสม</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="design" value="1" id="design_1" required>
+                <label for="design_1">1: ไม่เห็นด้วยอย่างยิ่ง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="design" value="2" id="design_2">
+                <label for="design_2">2: ไม่เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="design" value="3" id="design_3">
+                <label for="design_3">3: เฉยๆ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="design" value="4" id="design_4">
+                <label for="design_4">4: เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="design" value="5" id="design_5">
+                <label for="design_5">5: เห็นด้วยอย่างยิ่ง</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Overall -->
+          <div class="question-group">
+            <label class="question-label">4. โดยรวมแล้ว ฉันพอใจกับระบบนี้</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="overall" value="1" id="overall_1" required>
+                <label for="overall_1">1: ไม่เห็นด้วยอย่างยิ่ง</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="overall" value="2" id="overall_2">
+                <label for="overall_2">2: ไม่เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="overall" value="3" id="overall_3">
+                <label for="overall_3">3: เฉยๆ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="overall" value="4" id="overall_4">
+                <label for="overall_4">4: เห็นด้วย</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="overall" value="5" id="overall_5">
+                <label for="overall_5">5: เห็นด้วยอย่างยิ่ง</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>ข้อคิดเห็นเพิ่มเติม</h3>
+          
+          <div class="question-group">
+            <label class="question-label">5. สิ่งที่คุณชอบที่สุดในระบบนี้คืออะไร?</label>
+            <textarea name="likedMost" id="likedMost" placeholder="กรุณาระบุสิ่งที่คุณชอบ..." required></textarea>
+          </div>
+          
+          <div class="question-group">
+            <label class="question-label">6. ข้อเสนอแนะเพื่อปรับปรุงระบบ (ถ้ามี)</label>
+            <textarea name="suggestions" id="suggestions" placeholder="กรุณาให้ข้อเสนอแนะ..."></textarea>
+          </div>
+          
+          <div class="question-group">
+            <label class="question-label">7. คุณจะแนะนำให้เพื่อนใช้ระบบนี้หรือไม่?</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="recommend" value="แน่นอน" id="rec_yes" required>
+                <label for="rec_yes">แน่นอน</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="recommend" value="อาจจะ" id="rec_maybe">
+                <label for="rec_maybe">อาจจะ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="recommend" value="ไม่แน่ใจ" id="rec_unsure">
+                <label for="rec_unsure">ไม่แน่ใจ</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="recommend" value="ไม่" id="rec_no">
+                <label for="rec_no">ไม่</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" onclick="backToMainFromSystemEval()">
+            ยกเลิก
+          </button>
+          <button type="submit" class="btn btn-success" id="systemSubmitBtn">
+            ✓ ส่งการประเมิน
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- System Eval Success View -->
+    <div id="systemSuccessView" class="hidden">
+      <div class="header" style="border: none;">
+        <img src="https://i.ibb.co/202mgbXV/ENGR-I9.png" alt="Banner" class="header-banner">
+      </div>
+      <div class="success-message">
+        <h3>✓ ขอบคุณสำหรับการประเมินระบบ</h3>
+        <p>ความคิดเห็นของคุณจะช่วยให้เราพัฒนาระบบให้ดียิ่งขึ้น</p>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn" onclick="backToMainFromSystemSuccess()">
+          กลับหน้าหลัก
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let groupMembers = [];
+    let currentEvaluatedEmail = null;
+    
+    // Handle login
+    function handleLogin() {
+      const emailInput = document.getElementById('emailInput');
+      const email = emailInput.value.trim();
+      const loginBtn = document.getElementById('loginBtn');
+      const loginError = document.getElementById('loginError');
+      
+      loginError.classList.add('hidden');
+      
+      if (!email) {
+        loginError.textContent = 'กรุณากรอกอีเมล';
+        loginError.classList.remove('hidden');
+        return;
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        loginError.textContent = 'รูปแบบอีเมลไม่ถูกต้อง';
+        loginError.classList.remove('hidden');
+        return;
+      }
+      
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'กำลังตรวจสอบ...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentUser = result;
+            document.getElementById('loginView').classList.add('hidden');
+            displayUserInfo();
+          } else {
+            loginError.textContent = result.message;
+            loginError.classList.remove('hidden');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'เข้าสู่ระบบ';
+          }
+        })
+        .withFailureHandler(function(error) {
+          loginError.textContent = 'เกิดข้อผิดพลาด: ' + error.message;
+          loginError.classList.remove('hidden');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'เข้าสู่ระบบ';
+        })
+        .loginWithEmail(email);
+    }
+    
+    // Handle Enter key on email input
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('emailInput');
+      if (emailInput) {
+        emailInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleLogin();
+          }
+        });
+      }
+      
+      const form = document.getElementById('evalForm');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitEvaluation();
+        });
+      }
+      
+      const systemForm = document.getElementById('systemEvalForm');
+      if (systemForm) {
+        systemForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitSystemEvaluation();
+        });
+      }
+    });
+    
+    function logout() {
+      if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+        currentUser = null;
+        document.getElementById('mainView').classList.add('hidden');
+        document.getElementById('membersView').classList.add('hidden');
+        document.getElementById('evaluationView').classList.add('hidden');
+        document.getElementById('successView').classList.add('hidden');
+        document.getElementById('loginView').classList.remove('hidden');
+        document.getElementById('emailInput').value = '';
+        document.getElementById('loginError').classList.add('hidden');
+      }
+    }
+    
+    function displayUserInfo() {
+      document.getElementById('userStudentId').textContent = currentUser.studentId;
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userGroup').textContent = currentUser.group;
+      
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('mainView').classList.remove('hidden');
+    }
+    
+    function showGroupMembers() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('mainView').classList.add('hidden');
+      
+      google.script.run
+        .withSuccessHandler(function(members) {
+          groupMembers = members;
+          displayGroupMembers();
+        })
+        .withFailureHandler(function(error) {
+          showError('เกิดข้อผิดพลาด: ' + error.message);
+        })
+        .getGroupMembers(currentUser.group, currentUser.email);
+    }
+    
+    function displayGroupMembers() {
+      const membersList = document.getElementById('membersList');
+      membersList.innerHTML = '';
+      
+      if (groupMembers.length === 0) {
+        membersList.innerHTML = '<p style="text-align:center; color:#6c757d; padding: 40px;">ไม่พบเพื่อนในกลุ่ม</p>';
+      } else {
+        groupMembers.forEach(function(member) {
+          const item = document.createElement('div');
+          item.className = 'member-item';
+          
+          const statusClass = member.evaluated ? 'status-completed' : 'status-pending';
+          const statusText = member.evaluated ? 'ประเมินแล้ว' : 'ยังไม่ได้ประเมิน';
+          
+          item.innerHTML = `
+            <div class="member-info">
+              <div class="member-name">${member.name}</div>
+              <div class="member-id">รหัส: ${member.studentId}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="status-badge ${statusClass}">${statusText}</span>
+              ${!member.evaluated ? `<button class="btn btn-small" onclick="startEvaluation('${member.email}')">ประเมิน</button>` : ''}
+            </div>
+          `;
+          
+          membersList.appendChild(item);
+        });
+      }
+      
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('membersView').classList.remove('hidden');
+    }
+    
+    function startEvaluation(evaluatedEmail) {
+      currentEvaluatedEmail = evaluatedEmail;
+      
+      google.script.run
+        .withSuccessHandler(function(info) {
+          if (info) {
+            document.getElementById('evaluatedName').textContent = info.name;
+            document.getElementById('evaluatedId').textContent = info.studentId;
+            
+            document.getElementById('membersView').classList.add('hidden');
+            document.getElementById('evaluationView').classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('evalForm').reset();
+            window.scrollTo(0, 0);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('เกิดข้อผิดพลาด: ' + error.message);
+        })
+        .getEvaluatedInfo(evaluatedEmail);
+    }
+    
+    function cancelEvaluation() {
+      if (confirm('คุณต้องการยกเลิกการประเมินใช่หรือไม่?')) {
+        document.getElementById('evaluationView').classList.add('hidden');
+        document.getElementById('membersView').classList.remove('hidden');
+      }
+    }
+    
+    function submitEvaluation() {
+      const form = document.getElementById('evalForm');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      // Get ratings
+      const ratings = {
+        q1: form.querySelector('input[name="q1"]:checked').value,
+        q2: form.querySelector('input[name="q2"]:checked').value,
+        q3: form.querySelector('input[name="q3"]:checked').value,
+        q4: form.querySelector('input[name="q4"]:checked').value,
+        q5: form.querySelector('input[name="q5"]:checked').value
+      };
+      
+      // Get feedback
+      const feedback = {
+        strengths: document.getElementById('strengths').value.trim(),
+        improvements: document.getElementById('improvements').value.trim()
+      };
+      
+      // Validate
+      if (!feedback.strengths || !feedback.improvements) {
+        alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+        return;
+      }
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'กำลังบันทึก...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccessView();
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + result.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✓ ส่งแบบประเมิน';
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('เกิดข้อผิดพลาด: ' + error.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✓ ส่งแบบประเมิน';
+        })
+        .saveEvaluation(currentUser, currentEvaluatedEmail, ratings, feedback);
+    }
+    
+    function showSuccessView() {
+      document.getElementById('evaluationView').classList.add('hidden');
+      document.getElementById('successView').classList.remove('hidden');
+      
+      // Update group members list and show remaining
+      google.script.run
+        .withSuccessHandler(function(members) {
+          groupMembers = members;
+          
+          const remaining = members.filter(m => !m.evaluated);
+          if (remaining.length > 0) {
+            const remainingDiv = document.getElementById('remainingMembers');
+            const remainingList = document.getElementById('remainingList');
+            remainingDiv.classList.remove('hidden');
+            
+            remainingList.innerHTML = '';
+            remaining.forEach(function(member) {
+              const item = document.createElement('div');
+              item.className = 'member-item';
+              item.innerHTML = `
+                <div class="member-info">
+                  <div class="member-name">${member.name}</div>
+                  <div class="member-id">รหัส: ${member.studentId}</div>
+                </div>
+                <button class="btn btn-small" onclick="startEvaluation('${member.email}')">ประเมิน</button>
+              `;
+              remainingList.appendChild(item);
+            });
+          }
+        })
+        .getGroupMembers(currentUser.group, currentUser.email);
+      
+      window.scrollTo(0, 0);
+    }
+    
+    function backToMain() {
+      document.getElementById('membersView').classList.add('hidden');
+      document.getElementById('mainView').classList.remove('hidden');
+    }
+    
+    function backToMembers() {
+      document.getElementById('successView').classList.add('hidden');
+      // Reload ข้อมูลใหม่เพื่ออัพเดทสถานะ
+      refreshMembersList();
+    }
+    
+    function refreshMembersList() {
+      const refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '⏳ กำลังรีเฟรช...';
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(members) {
+          groupMembers = members;
+          displayGroupMembers();
+          
+          if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = '🔄 รีเฟรช';
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('เกิดข้อผิดพลาดในการรีเฟรช: ' + error.message);
+          if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = '🔄 รีเฟรช';
+          }
+        })
+        .getGroupMembers(currentUser.group, currentUser.email);
+    }
+    
+    // View My Feedback
+    function viewMyFeedback() {
+      document.getElementById('mainView').classList.add('hidden');
+      document.getElementById('loadingState').classList.remove('hidden');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById('loadingState').classList.add('hidden');
+          
+          if (result.success) {
+            displayFeedback(result);
+          } else {
+            alert(result.message);
+            document.getElementById('mainView').classList.remove('hidden');
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('loadingState').classList.add('hidden');
+          alert('เกิดข้อผิดพลาด: ' + error.message);
+          document.getElementById('mainView').classList.remove('hidden');
+        })
+        .getMyFeedback(currentUser.email, currentUser.group);
+    }
+    
+    function displayFeedback(data) {
+      const content = document.getElementById('feedbackContent');
+      
+      let html = `
+        <div class="feedback-stats">
+          <div class="stat-card">
+            <div class="stat-value">${data.totalPeers}</div>
+            <div class="stat-label">เพื่อนในกลุ่มทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${data.evaluatedCount}</div>
+            <div class="stat-label">คนที่ประเมินคุณแล้ว</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${((parseFloat(data.averages.comp1) + parseFloat(data.averages.comp2) + parseFloat(data.averages.comp3) + parseFloat(data.averages.comp4) + parseFloat(data.averages.comp5)) / 5).toFixed(2)}</div>
+            <div class="stat-label">คะแนนเฉลี่ยรวม</div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3>📊 สรุปคำแนะนำเพื่อการพัฒนาตนเอง</h3>
+          <div class="dev-table-wrapper">
+            <table class="dev-table">
+              <thead>
+                <tr>
+                  <th>ด้านที่ประเมิน</th>
+                  <th style="text-align: center; min-width: 100px;">คะแนนเฉลี่ย</th>
+                  <th>คำแนะนำเพื่อพัฒนา</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      // สร้างแถวในตาราง
+      if (data.summary && data.summary.tableData && Array.isArray(data.summary.tableData)) {
+        data.summary.tableData.forEach(function(row, index) {
+          const score = parseFloat(row.score);
+          let scoreClass = '';
+          if (score >= 4.5) scoreClass = 'score-excellent';
+          else if (score >= 4.0) scoreClass = 'score-good';
+          else if (score >= 3.0) scoreClass = 'score-fair';
+          else scoreClass = 'score-poor';
+          
+          const isOverall = index === data.summary.tableData.length - 1;
+          const rowClass = isOverall ? 'overall-row' : '';
+          
+          html += `
+            <tr class="${rowClass}">
+              <td class="aspect-name">${row.name}</td>
+              <td class="score-cell ${scoreClass}">${row.score}/5</td>
+              <td class="suggestion-cell">${row.suggestion}</td>
+            </tr>
+          `;
+        });
+      }
+      
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      
+      // Strengths feedback
+      if (data.strengths && data.strengths.length > 0) {
+        html += `
+          <div class="form-section">
+            <h3>💪 จุดเด่นที่เพื่อนมองเห็น</h3>
+            <div class="feedback-box">
+        `;
+        data.strengths.forEach(function(item, index) {
+          html += `<div class="feedback-item">${index + 1}. ${item}</div>`;
+        });
+        html += `</div></div>`;
+      }
+      
+      // Improvements feedback
+      if (data.improvements && data.improvements.length > 0) {
+        html += `
+          <div class="form-section">
+            <h3>🎯 ข้อเสนอแนะเพื่อการพัฒนา</h3>
+            <div class="feedback-box">
+        `;
+        data.improvements.forEach(function(item, index) {
+          html += `<div class="feedback-item">${index + 1}. ${item}</div>`;
+        });
+        html += `</div></div>`;
+      }
+      
+      content.innerHTML = html;
+      document.getElementById('feedbackView').classList.remove('hidden');
+    }
+    
+    function backToMainFromFeedback() {
+      document.getElementById('feedbackView').classList.add('hidden');
+      document.getElementById('mainView').classList.remove('hidden');
+    }
+    
+    // System Evaluation
+    function showSystemEval() {
+      document.getElementById('mainView').classList.add('hidden');
+      document.getElementById('systemEvalView').classList.remove('hidden');
+      document.getElementById('systemEvalForm').reset();
+      window.scrollTo(0, 0);
+    }
+    
+    function submitSystemEvaluation() {
+      const form = document.getElementById('systemEvalForm');
+      const submitBtn = document.getElementById('systemSubmitBtn');
+      
+      const ratings = {
+        easeOfUse: form.querySelector('input[name="easeOfUse"]:checked').value,
+        usefulness: form.querySelector('input[name="usefulness"]:checked').value,
+        design: form.querySelector('input[name="design"]:checked').value,
+        overall: form.querySelector('input[name="overall"]:checked').value
+      };
+      
+      const feedback = {
+        likedMost: document.getElementById('likedMost').value.trim(),
+        suggestions: document.getElementById('suggestions').value.trim(),
+        recommend: form.querySelector('input[name="recommend"]:checked').value
+      };
+      
+      if (!feedback.likedMost) {
+        alert('กรุณากรอกสิ่งที่คุณชอบที่สุด');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'กำลังบันทึก...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            document.getElementById('systemEvalView').classList.add('hidden');
+            document.getElementById('systemSuccessView').classList.remove('hidden');
+            window.scrollTo(0, 0);
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + result.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✓ ส่งการประเมิน';
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('เกิดข้อผิดพลาด: ' + error.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✓ ส่งการประเมิน';
+        })
+        .saveSystemEvaluation(currentUser, ratings, feedback);
+    }
+    
+    function backToMainFromSystemEval() {
+      document.getElementById('systemEvalView').classList.add('hidden');
+      document.getElementById('mainView').classList.remove('hidden');
+    }
+    
+    function backToMainFromSystemSuccess() {
+      document.getElementById('systemSuccessView').classList.add('hidden');
+      document.getElementById('mainView').classList.remove('hidden');
+    }
+    
+    function showError(message) {
+      document.getElementById('loadingState').classList.add('hidden');
+      const errorDiv = document.getElementById('errorState');
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
